@@ -25,55 +25,65 @@
     var todos = []
     //buat variabel untuk menyimpan data todo saat proses edit
     var editedTodo = null
+
+    // ini block on ready namanya, jadi ketika di load di tunggu dulu kalo semua file sudah di load, baru di jalankna fungsiya
+    $(document).ready(function () {
+      showTodoList(); /* render dulu todonya di awal file selesai di load */
+    });
+
+
     $("#todo-form").submit(function(e){
       //mencegah aksi default
       e.preventDefault()
+
       var label = $("input[name=todo]").val()
       if (editedTodo == null) {
         // new todo
-        var newTodo = {
-          key: todos.length,
-          label: label,
-          is_done: false
-        }
-        todos.push(newTodo)
+
+        var todo = { label };
+        $.ajax({
+          url: "http://localhost:3000/todos",
+          type: "POST",
+          data: { todo },
+          success: function() {
+            showTodoList()
+            $("#todo-form").trigger("reset")
+          }
+        });
       } else {
         // edit todo
-        var newTodos = []
-        $.each(todos, function(index, value) {
-          if(value.key == editedTodo.key) {
-            var newTodo = {
-              key: value.key,
-              label: label,
-              is_done: value.is_done
-            }
-            newTodos.push(newTodo)
-          } else {
-            newTodos.push(value)
+        var todo = { label };
+
+        $.ajax({
+          url: "http://localhost:3000/todos/" + editedTodo.id,
+          type: "PUT",
+          data: { todo },
+          success: function () {
+            showTodoList()
+            $("#todo-form").trigger("reset")
           }
-        })
-        todos = newTodos
-        editedTodo = null
+        });
       }
-      showTodoList()
-      $(this).trigger("reset")
     })
 
     //fungsi untuk merender todo yang baru, dilakukan setiap sebuah proses selesai dijalankan
     var showTodoList = function(){
-      $("#todo-list").empty()
-      $.each(todos, function(index, value){
-        
-        var component = "<li data-id=" + value.key + ">"
-        if(value.is_done){
-          component += "<span class='label done'>"+ value.label +" </span>"
-        } else {
-          component += "<span class='label'>"+ value.label +" </span>"
-          component += "- <a class='edit' href=''>edit</a>|<a class='delete' href=''>delete</a>"
-        }
-        component += "</li>"
-        $("#todo-list").append(component)
-      })
+      $.get("http://localhost:3000/todos", function (data) {
+        todos = data
+
+        $("#todo-list").empty()
+        $.each(todos, function(index, value){
+          var component = "<li data-id=" + value.id + " data-status=" + value.is_done + ">"
+          if(value.is_done){
+            component += "<span class='label done'>"+ value.label +" </span>"
+          } else {
+            component += "<span class='label'>"+ value.label +" </span>"
+            component += "- <a class='edit' href=''>edit</a>|<a class='delete' href=''>delete</a>"
+          }
+          component += "</li>"
+          $("#todo-list").append(component)
+        })
+      });
     }
 
     // saat klik link detele
@@ -81,11 +91,14 @@
       e.preventDefault()
       var li = $(this).parent()
       var id = li.data("id")
-      newTodos = []
-      $.each(todos, function(index, value) {
-        value.key == id ? li.remove() : newTodos.push(value)
-      })
-      todos = newTodos
+
+      $.ajax({
+        url: "http://localhost:3000/todos/" + id,
+        type: "DELETE",
+        success: function () {
+          showTodoList()
+        }
+      });
     })
 
     // saat klik link edit
@@ -95,10 +108,10 @@
       var id = li.data("id")
 
       $.each(todos, function(index, value) {
-        if (value.key == id) editedTodo = value
+        if (value.id == id) editedTodo = value
       })
 
-      $("input[name=todo]").val(editedTodo.label)
+      if (editedTodo) $("input[name=todo]").val(editedTodo.label) /* memastikan kalo value edited todo ndak null baru di masukin ke formnya */
     })
 
     // saat label di klik
@@ -107,22 +120,23 @@
 
       var li = $(this).parent()
       var id = li.data("id")
+      var status = li.data("status")
 
-      var newTodos = []
-      $.each(todos, function(index, value) {
-        if(value.key == id) {
-          var newTodo = {
-            key: value.key,
-            label: value.label,
-            is_done: !value.is_done
-          }
-          newTodos.push(newTodo)
-        } else {
-          newTodos.push(value)
+      if (status == true){
+        var todo = { is_done: false };
+      } else {
+        var todo = { is_done: true };
+      }
+      
+      $.ajax({
+        url: "http://localhost:3000/todos/" + id,
+        type: "PUT",
+        data: { todo },
+        success: function () {
+          showTodoList()
+          $("#todo-form").trigger("reset")
         }
       })
-      todos = newTodos
-      showTodoList();
     })
   </script>
 </body>
