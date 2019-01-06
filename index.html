@@ -22,11 +22,8 @@
     <div class="row">
       <div class="col-md-12">
         <form action="" method="POST" id="todo-form" class="form-inline">
-          <div class="form-group">
-            <input type="text" placeholder="Input todo here" name="todo" class="form-control">
-          </div>
-          &nbsp;
-          <input type="submit" class="btn btn-primary">
+          <input type="text" placeholder="Input todo here" name="todo" class="form-control mb-2 mr-sm-2">
+          <input type="submit" class="btn btn-primary mb-2">
         </form>
         <br/>
         <label id="label">Todo List</label>
@@ -39,6 +36,13 @@
     var todos = []
     //buat variabel untuk menyimpan data todo saat proses edit
     var editedTodo = null
+
+    var apiUrl = function(params) {
+      // var host = "http://localhost:3000"
+      var host = "http://192.168.43.36:3000"
+      if (!params) return host
+      return host + params
+    }
 
     // ini block on ready namanya, jadi ketika di load di tunggu dulu kalo semua file sudah di load, baru di jalankna fungsiya
     $(document).ready(function () {
@@ -56,7 +60,7 @@
 
         var todo = { label };
         $.ajax({
-          url: "http://localhost:3000/todos",
+          url: apiUrl("/todos"),
           type: "POST",
           data: { todo },
           success: function() {
@@ -67,9 +71,9 @@
       } else {
         // edit todo
         var todo = { label };
-
+        
         $.ajax({
-          url: "http://localhost:3000/todos/" + editedTodo.id,
+          url: apiUrl("/todos/") + editedTodo.id,
           type: "PUT",
           data: { todo },
           success: function () {
@@ -82,7 +86,7 @@
 
     //fungsi untuk merender todo yang baru, dilakukan setiap sebuah proses selesai dijalankan
     var showTodoList = function(){
-      $.get("http://localhost:3000/todos", function (data) {
+      $.get(apiUrl("/todos"), function (data) {
         todos = data
 
         $("#todo-list").empty()
@@ -107,7 +111,7 @@
       var id = li.data("id")
 
       $.ajax({
-        url: "http://localhost:3000/todos/" + id,
+        url: apiUrl("/todos/") + id,
         type: "DELETE",
         success: function () {
           showTodoList()
@@ -143,7 +147,7 @@
       }
       
       $.ajax({
-        url: "http://localhost:3000/todos/" + id,
+        url: apiUrl("/todos/") + id,
         type: "PUT",
         data: { todo },
         success: function () {
