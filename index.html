@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Todo App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="js/jquery-3.3.1.min.js"></script>
+  <style>
+    .done {
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+  <form action="" method="POST" id="todo-form">
+    <input type="text" placeholder="Input todo here" name="todo">
+    <input type="submit" value="Save">
+  </form>
+  <br/>
+  <label id="label">Todo List</label>
+  <ul id="todo-list"></ul>
+  <script>
+    //buat variabel untuk menyimpan data todo saat proses tambah
+    var todos = []
+    //buat variabel untuk menyimpan data todo saat proses edit
+    var editedTodo = null
+    $("#todo-form").submit(function(e){
+      //mencegah aksi default
+      e.preventDefault()
+      var label = $("input[name=todo]").val()
+      if (editedTodo == null) {
+        // new todo
+        var newTodo = {
+          key: todos.length,
+          label: label,
+          is_done: false
+        }
+        todos.push(newTodo)
+      } else {
+        // edit todo
+        var newTodos = []
+        $.each(todos, function(index, value) {
+          if(value.key == editedTodo.key) {
+            var newTodo = {
+              key: value.key,
+              label: label,
+              is_done: value.is_done
+            }
+            newTodos.push(newTodo)
+          } else {
+            newTodos.push(value)
+          }
+        })
+        todos = newTodos
+        editedTodo = null
+      }
+      showTodoList()
+      $(this).trigger("reset")
+    })
+
+    //fungsi untuk merender todo yang baru, dilakukan setiap sebuah proses selesai dijalankan
+    var showTodoList = function(){
+      $("#todo-list").empty()
+      $.each(todos, function(index, value){
+        
+        var component = "<li data-id=" + value.key + ">"
+        if(value.is_done){
+          component += "<span class='label done'>"+ value.label +" </span>"
+        } else {
+          component += "<span class='label'>"+ value.label +" </span>"
+          component += "- <a class='edit' href=''>edit</a>|<a class='delete' href=''>delete</a>"
+        }
+        component += "</li>"
+        $("#todo-list").append(component)
+      })
+    }
+
+    // saat klik link detele
+    $("#todo-list").on("click", '.delete', function(e) {
+      e.preventDefault()
+      var li = $(this).parent()
+      var id = li.data("id")
+      newTodos = []
+      $.each(todos, function(index, value) {
+        value.key == id ? li.remove() : newTodos.push(value)
+      })
+      todos = newTodos
+    })
+
+    // saat klik link edit
+    $("#todo-list").on("click", '.edit', function(e) {
+      e.preventDefault()
+      var li = $(this).parent()
+      var id = li.data("id")
+
+      $.each(todos, function(index, value) {
+        if (value.key == id) editedTodo = value
+      })
+
+      $("input[name=todo]").val(editedTodo.label)
+    })
+
+    // saat label di klik
+    $("#todo-list").on("click", '.label', function(e) {
+      e.preventDefault()
+
+      var li = $(this).parent()
+      var id = li.data("id")
+
+      var newTodos = []
+      $.each(todos, function(index, value) {
+        if(value.key == id) {
+          var newTodo = {
+            key: value.key,
+            label: value.label,
+            is_done: !value.is_done
+          }
+          newTodos.push(newTodo)
+        } else {
+          newTodos.push(value)
+        }
+      })
+      todos = newTodos
+      showTodoList();
+    })
+  </script>
+</body>
+</html>
