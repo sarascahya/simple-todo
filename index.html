@@ -14,6 +14,16 @@
     .done {
       text-decoration: line-through;
     }
+
+    #loading {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+    }
+
+    .loading-img {
+      width: 32px;
+    }
   </style>
 </head>
 <body>
@@ -26,8 +36,14 @@
           <input type="submit" class="btn btn-primary mb-2">
         </form>
         <br/>
-        <label id="label">Todo List</label>
-        <ul id="todo-list"></ul>
+        <div id="loading">
+          Loading todos &nbsp;
+          <img class="loading-img" src="./loading.gif">
+        </div>
+        <div id="todo-container">
+          <label id="label">Todo List</label>
+          <ul id="todo-list"></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -60,6 +76,8 @@
 
     // ini block on ready namanya, jadi ketika di load di tunggu dulu kalo semua file sudah di load, baru di jalankna fungsiya
     $(document).ready(function () {
+      $("#loading").show();
+      $("#todo-container").hide();
       showTodoList(); /* render dulu todonya di awal file selesai di load */
     });
 
@@ -100,22 +118,34 @@
 
     //fungsi untuk merender todo yang baru, dilakukan setiap sebuah proses selesai dijalankan
     var showTodoList = function(){
-      $.get(apiUrl("/todos"), function (data) {
-        todos = data
-
-        $("#todo-list").empty()
-        $.each(todos, function(index, value){
-          var component = "<li data-id=" + value.id + " data-status=" + value.is_done + ">"
-          if(value.is_done){
-            component += "<span class='label done'>"+ value.label +" </span>"
+      $("#loading").fadeIn();
+      $("#todo-container").fadeOut("normal", function(){
+        $.get(apiUrl("/todos"), function (data) {
+          todos = data
+          if (todos.length == 0) {
+            $("#label").text("There are nothing here!")
           } else {
-            component += "<span class='label'>"+ value.label +" </span>"
-            component += " - <a class='edit' href=''><i class='fas fa-edit'></i></a> <a class='delete' href=''><i class='fas fa-trash'></i></a>"
+            $("#label").text("Todo List:")          
           }
-          component += "</li>"
-          $("#todo-list").append(component)
-        })
+
+          $("#todo-list").empty()
+          $.each(todos, function(index, value){
+            var component = "<li data-id=" + value.id + " data-status=" + value.is_done + ">"
+            if(value.is_done){
+              component += "<span class='label done'>"+ value.label +" </span>"
+            } else {
+              component += "<span class='label'>"+ value.label +" </span>"
+              component += " - <a class='edit' href=''><i class='fas fa-edit'></i></a> <a class='delete' href=''><i class='fas fa-trash'></i></a>"
+            }
+            component += "</li>"
+            $("#todo-list").append(component)
+          })
+
+          $("#loading").fadeOut();
+          $("#todo-container").fadeIn();
+        });
       });
+      
     }
 
     // saat klik link detele
