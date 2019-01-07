@@ -37,11 +37,25 @@
     //buat variabel untuk menyimpan data todo saat proses edit
     var editedTodo = null
 
+    /*
+    // cara lain untuk get apiUrl
     var apiUrl = function(params) {
-      // var host = "http://localhost:3000"
-      var host = "http://192.168.43.36:3000"
+      var host = "http://localhost:3000"
       if (!params) return host
       return host + params
+    }
+    */
+
+    var apiUrl = function(params) {
+      console.log(params);
+
+      var host = "http://localhost:3000/"
+      params = params.split("/")
+      var newParams = []
+      $.each(params, function(index, value) {
+        if (value != "") newParams.push(value)
+      })
+      return host + newParams.join('/')
     }
 
     // ini block on ready namanya, jadi ketika di load di tunggu dulu kalo semua file sudah di load, baru di jalankna fungsiya
@@ -73,7 +87,7 @@
         var todo = { label };
         
         $.ajax({
-          url: apiUrl("/todos/") + editedTodo.id,
+          url: apiUrl("/todos/" + editedTodo.id),
           type: "PUT",
           data: { todo },
           success: function () {
@@ -111,7 +125,7 @@
       var id = li.data("id")
 
       $.ajax({
-        url: apiUrl("/todos/") + id,
+        url: apiUrl("/todos/" + id),
         type: "DELETE",
         success: function () {
           showTodoList()
@@ -129,7 +143,7 @@
         if (value.id == id) editedTodo = value
       })
 
-      if (editedTodo) $("input[name=todo]").val(editedTodo.label) /* memastikan kalo value edited todo ndak null baru di masukin ke formnya */
+      if (editedTodo) $("input[name=todo]").val(editedTodo.label) /* memastikan value edited todo tidak null baru di masukkan ke formnya */
     })
 
     // saat label di klik
