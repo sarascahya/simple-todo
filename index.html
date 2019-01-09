@@ -129,11 +129,13 @@
 
           $("#todo-list").empty()
           $.each(todos, function(index, value){
+            var label = value.label;
+            label = $("<span>").text(label).html();
             var component = "<li data-id=" + value.id + " data-status=" + value.is_done + ">"
             if(value.is_done){
-              component += "<span class='label done'>"+ value.label +" </span>"
+              component += "<span class='label done'>"+ label +" </span>"
             } else {
-              component += "<span class='label'>"+ value.label +" </span>"
+              component += "<span class='label'>"+ label +" </span>"
               component += " - <a class='edit' href=''><i class='fas fa-edit'></i></a> <a class='delete' href=''><i class='fas fa-trash'></i></a>"
             }
             component += "</li>"
