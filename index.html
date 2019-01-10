@@ -193,7 +193,7 @@
       }
       
       $.ajax({
-        url: apiUrl("/todos/") + id,
+        url: apiUrl("/todos/" + id),
         type: "PUT",
         data: { todo },
         success: function () {
